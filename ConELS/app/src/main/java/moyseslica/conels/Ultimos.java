@@ -1,0 +1,48 @@
+package moyseslica.conels;
+
+import android.content.Intent;
+import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.design.widget.BottomNavigationView;
+import android.support.v7.app.AppCompatActivity;
+import android.view.MenuItem;
+import android.widget.TextView;
+
+public class Ultimos extends AppCompatActivity {
+
+    private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
+            = new BottomNavigationView.OnNavigationItemSelectedListener() {
+
+        @Override
+        public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+            Intent intent;
+            switch (item.getItemId()) {
+                case R.id.navigation_favoritos:
+                    intent = new Intent(getBaseContext(),Favoritos.class);
+                    startActivity(intent);
+                    return true;
+                case R.id.navigation_traduzir:
+                    intent = new Intent(getBaseContext(),Traducao.class);
+                    startActivity(intent);
+                    return true;
+                case R.id.navigation_ultimos:
+
+                    return true;
+            }
+            return false;
+        }
+
+    };
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_ultimos);
+
+        BottomNavigationView navigation = (BottomNavigationView) findViewById(R.id.navigation);
+        navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
+        navigation.setSelectedItemId(R.id.navigation_ultimos);
+
+    }
+
+}
