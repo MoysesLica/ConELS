@@ -50,6 +50,7 @@
                 android:layout_marginLeft="8dp"
                 android:layout_marginRight="8dp"
                 android:ems="10"
+                android:gravity="center"
                 android:hint="Digite uma Palavra para Traduzir"
                 android:inputType="textPersonName"
                 android:textAlignment="center"
