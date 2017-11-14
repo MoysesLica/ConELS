@@ -7,8 +7,13 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
@@ -32,8 +37,10 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.net.URLConnection;
 import java.util.HashMap;
@@ -49,11 +56,15 @@ import java.util.zip.ZipInputStream;
 
 public class Traducao extends AppCompatActivity {
 
+    ImageView imagem;
+
     // Progress Dialog
     ProgressDialog mProgressDialog;
 
     // Progress dialog type (0 - for Horizontal progress bar)
     public static final int progress_bar_type = 0;
+
+    BancoSQL BancoDeDados;
 
     // File url to download
     String URL;
@@ -123,6 +134,50 @@ public class Traducao extends AppCompatActivity {
         BottomNavigationView navigation = (BottomNavigationView) findViewById(R.id.navigation);
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
         navigation.setSelectedItemId(R.id.navigation_traduzir);
+
+        final EditText texto = (EditText) findViewById(R.id.editText);
+        imagem = (ImageView) findViewById(R.id.imageView);
+
+        Button button = (Button)findViewById(R.id.button2);
+        button.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+
+                String PalavraInformada = texto.getText().toString();
+
+                SQLiteDatabase db = BancoDeDados.getReadableDatabase();
+
+                Cursor Resultado = db.rawQuery("SELECT Arquivo FROM Imagens WHERE LCASE(Palavra) = '" + PalavraInformada.toLowerCase() + "'", null);
+
+                if(!(Resultado.moveToFirst()) || Resultado.getCount() == 0){
+
+                    alertaBasico("Palavra não presente no dicionário, tente outra palavra ou um sinômimo desta.");
+
+                }else{
+
+                    do{
+
+                        File imgFile = new  File(Environment.getExternalStorageDirectory() + File.separator + "ConELS" + File.separator + Resultado.getString(0).toLowerCase());
+
+                        if(imgFile.exists()){
+
+                            alertaBasico(imgFile.getAbsolutePath());
+
+                            Bitmap myBitmap = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
+
+                            //imagem.setImageBitmap(myBitmap);
+
+                        }else{
+
+                            alertaBasico("Imagem não encontrada! Caminho: "+Environment.getExternalStorageDirectory() + File.separator + "ConELS" + File.separator + Resultado.getString(0).toLowerCase());
+
+                        }
+
+                    }while(Resultado.moveToNext());
+
+                }
+
+            }
+        });
 
         EsconderItens();
 
@@ -326,6 +381,29 @@ public class Traducao extends AppCompatActivity {
 
             File deleted = new File(diretorio, Url[1]);
             deleted.delete();
+
+            File file = new File(diretorio, "BD.sql");
+
+            StringBuilder text = new StringBuilder();
+
+            try {
+                BufferedReader br = new BufferedReader(new FileReader(file));
+                String line;
+
+                while ((line = br.readLine()) != null) {
+                    text.append(line);
+                    text.append('\n');
+                }
+                br.close();
+            }catch (IOException e) {
+
+                e.printStackTrace();
+
+            }
+
+            String[] comandosSQL = text.toString().split(System.getProperty("line.separator"));
+
+            BancoDeDados = new BancoSQL(getApplicationContext(), comandosSQL);
 
             return null;
         }
