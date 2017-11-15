@@ -17,6 +17,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Parcel;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
 import android.support.v7.app.AppCompatActivity;
@@ -44,6 +45,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.net.URLConnection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.net.URL;
 import java.net.URLConnection;
@@ -146,33 +148,27 @@ public class Traducao extends AppCompatActivity {
 
                 SQLiteDatabase db = BancoDeDados.getReadableDatabase();
 
-                Cursor Resultado = db.rawQuery("SELECT Arquivo FROM Imagens WHERE LCASE(Palavra) = '" + PalavraInformada.toLowerCase() + "'", null);
+                Cursor Resultado = db.rawQuery("SELECT Arquivo FROM Imagens WHERE LOWER(Palavra) = '" + PalavraInformada.toLowerCase() + "'", null);
 
                 if(!(Resultado.moveToFirst()) || Resultado.getCount() == 0){
 
-                    alertaBasico("Palavra não presente no dicionário, tente outra palavra ou um sinômimo desta.");
+                    alertaBasico("Palavra não encontrada no dicionário, verifique a ortografia ou digite um sinônimo!");
 
                 }else{
 
-                    do{
+                    File img = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator + "ConELS" + File.separator + Resultado.getString(0).toLowerCase());
 
-                        File imgFile = new  File(Environment.getExternalStorageDirectory() + File.separator + "ConELS" + File.separator + Resultado.getString(0).toLowerCase());
+                    if(img.exists()){
 
-                        if(imgFile.exists()){
+                        Bitmap bitmap1 = BitmapFactory.decodeFile(img.getAbsolutePath());
 
-                            alertaBasico(imgFile.getAbsolutePath());
+                        imagem.setImageBitmap(bitmap1);
 
-                            Bitmap myBitmap = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
+                    }else{
 
-                            //imagem.setImageBitmap(myBitmap);
+                        alertaBasico("Arquivo não encontrado, atualize seu dicionário e tente novamente!");
 
-                        }else{
-
-                            alertaBasico("Imagem não encontrada! Caminho: "+Environment.getExternalStorageDirectory() + File.separator + "ConELS" + File.separator + Resultado.getString(0).toLowerCase());
-
-                        }
-
-                    }while(Resultado.moveToNext());
+                    }
 
                 }
 
@@ -355,6 +351,15 @@ public class Traducao extends AppCompatActivity {
 
                 diretorio = filepath + File.separator + "ConELS"+ File.separator;
 
+                File dir = new File(diretorio);
+
+                if (dir.isDirectory()) {
+                    String[] children = dir.list();
+                    for (int i = 0; i < children.length; i++) {
+                        new File(dir, children[i]).delete();
+                    }
+                }
+
                 // Save the downloaded file
                 OutputStream output = new FileOutputStream(diretorio + Url[1]);
 
@@ -400,6 +405,8 @@ public class Traducao extends AppCompatActivity {
                 e.printStackTrace();
 
             }
+
+            getApplicationContext().deleteDatabase("DB.db");
 
             String[] comandosSQL = text.toString().split(System.getProperty("line.separator"));
 
