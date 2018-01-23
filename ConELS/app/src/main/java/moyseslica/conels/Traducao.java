@@ -37,6 +37,7 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
+import com.daimajia.slider.library.SliderLayout;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -60,6 +61,8 @@ public class Traducao extends AppCompatActivity {
 
     ImageView imagem;
 
+    String filetext = "";
+
     // Progress Dialog
     ProgressDialog mProgressDialog;
 
@@ -67,6 +70,7 @@ public class Traducao extends AppCompatActivity {
     public static final int progress_bar_type = 0;
 
     BancoSQL BancoDeDados;
+    private SliderLayout mDemoSlider;
 
     // File url to download
     String URL;
@@ -136,6 +140,7 @@ public class Traducao extends AppCompatActivity {
         BottomNavigationView navigation = (BottomNavigationView) findViewById(R.id.navigation);
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
         navigation.setSelectedItemId(R.id.navigation_traduzir);
+        mDemoSlider = (SliderLayout)findViewById(R.id.slider);
 
         final EditText texto = (EditText) findViewById(R.id.editText);
         imagem = (ImageView) findViewById(R.id.imageView);
@@ -144,7 +149,7 @@ public class Traducao extends AppCompatActivity {
         button.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
 
-                String PalavraInformada = texto.getText().toString();
+                /*String PalavraInformada = texto.getText().toString();
 
                 SQLiteDatabase db = BancoDeDados.getReadableDatabase();
 
@@ -170,7 +175,7 @@ public class Traducao extends AppCompatActivity {
 
                     }
 
-                }
+                }*/
 
             }
         });
@@ -192,7 +197,9 @@ public class Traducao extends AppCompatActivity {
 
            EsconderItens();
 
-           StringRequest stringRequest = new StringRequest(Request.Method.POST, "http://monitoriacastanhal.ufpa.br/iuri/iuri.php",
+           String url_host = "http://conels.geira.com.br/resource/versions/dictionary.php";
+
+           StringRequest stringRequest = new StringRequest(Request.Method.POST, url_host,
                    new Response.Listener<String>() {
                        @Override
                        public void onResponse(String response) {
@@ -246,6 +253,8 @@ public class Traducao extends AppCompatActivity {
            };
 
            RequestQueue requestQueue = Volley.newRequestQueue(this);
+           requestQueue .getCache().clear();
+           stringRequest.setShouldCache(false);
            requestQueue.add(stringRequest);
 
        }
@@ -313,7 +322,7 @@ public class Traducao extends AppCompatActivity {
             mProgressDialog.setTitle("Download Iniciado!");
             // Set your progress dialog Message
             mProgressDialog.setMessage("Baixando Arquivos, Por Favor Aguarde!");
-            mProgressDialog.setIndeterminate(false);
+            mProgressDialog.setIndeterminate(true);
             mProgressDialog.setMax(100);
             mProgressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
             // Show progress dialog
@@ -406,6 +415,8 @@ public class Traducao extends AppCompatActivity {
 
             }
 
+            filetext = text.toString();
+
             getApplicationContext().deleteDatabase("DB.db");
 
             String[] comandosSQL = text.toString().split(System.getProperty("line.separator"));
@@ -419,12 +430,11 @@ public class Traducao extends AppCompatActivity {
         protected void onProgressUpdate(Integer... progress) {
             super.onProgressUpdate(progress);
             // Update the progress dialog
-            mProgressDialog.setProgress(progress[0]);
+            //mProgressDialog.setProgress(progress[0]);
             // Dismiss the progress dialog
             if(progress[0] == 100){
                 mProgressDialog.dismiss();
                 alertaBasico("Dicionário Atualizado!");
-                                
             }
         }
     }
